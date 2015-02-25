@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Conquer</string>
 
-    <string name="title_section1">Section 1</string>
+    <string name="title_now_playing">Now Playing</string>
     <string name="title_section2">Section 2</string>
     <string name="title_section3">Section 3</string>
 
@@ -12,6 +12,6 @@
 
     <string name="action_settings">Settings</string>
 
-    <string name="client_id">d4667593133f41479f99d95785d1597e</string>
-    <string name="spotify_redirect">tysonjmiller.conquer://callback</string>
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

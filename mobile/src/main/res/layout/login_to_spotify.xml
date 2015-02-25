@@ -19,4 +19,17 @@
         android:src="@drawable/log_in_with_spotify"
         android:scaleType="centerInside"
         android:layout_margin="11dp" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/no_login_button"
+        android:minHeight="55dp"
+        android:layout_below="@+id/spotify_login_button"
+        android:text="Continue without logging in"
+        android:background="@android:drawable/dialog_holo_dark_frame"
+        android:stateListAnimator="@null"
+        android:textColor="@android:color/white"
+        android:textSize="12dp"
+        android:layout_margin="11dp"/>
 </RelativeLayout>
