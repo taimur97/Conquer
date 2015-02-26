@@ -5,7 +5,6 @@ import android.util.Log;
 
 import com.google.inject.Inject;
 import com.spotify.sdk.android.playback.ConnectionStateCallback;
-import com.spotify.sdk.android.playback.Player;
 import com.spotify.sdk.android.playback.PlayerNotificationCallback;
 import com.spotify.sdk.android.playback.PlayerState;
 
@@ -17,15 +16,16 @@ import roboguice.fragment.RoboFragment;
 public class BaseFragment extends RoboFragment implements
         PlayerNotificationCallback, ConnectionStateCallback {
     public static final String TAG = BaseFragment.class.getSimpleName();
-    @Inject Player mPlayer;
+    @Inject UserDAO mUserDAO;
+    @Inject MediaDAO mMediaDAO;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
-        if (mPlayer != null && mPlayer.isInitialized()) {
-            mPlayer.addConnectionStateCallback(this);
-            mPlayer.addPlayerNotificationCallback(this);
+        if (mMediaDAO!= null && mMediaDAO.getSpotifyPlayer() != null && mMediaDAO.getSpotifyPlayer().isInitialized()) {
+            mMediaDAO.getSpotifyPlayer().addConnectionStateCallback(this);
+            mMediaDAO.getSpotifyPlayer().addPlayerNotificationCallback(this);
         }
     }
 

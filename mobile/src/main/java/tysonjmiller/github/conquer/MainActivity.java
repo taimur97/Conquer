@@ -1,11 +1,13 @@
 package tysonjmiller.github.conquer;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,14 +15,17 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.inject.Inject;
+import com.spotify.sdk.android.Spotify;
 import com.spotify.sdk.android.playback.Player;
 
 import roboguice.activity.RoboActionBarActivity;
 
 
 public class MainActivity extends RoboActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
-    @Inject Player mPlayer;
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, PlayerFragment.OnFragmentInteractionListener {
+    public static final String TAG = MainActivity.class.getSimpleName();
+    @Inject UserDAO mUserDAO;
+    @Inject MediaDAO mMediaDAO;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -45,6 +50,26 @@ public class MainActivity extends RoboActionBarActivity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+        if (mMediaDAO != null && mMediaDAO.getSpotifyPlayerConfig() != null) {
+            Spotify.getPlayer(mMediaDAO.getSpotifyPlayerConfig(), this, new Player.InitializationObserver() {
+                @Override
+                public void onInitialized(Player player) {
+                    Log.d(TAG, "Player initialized successfully!!!");
+                    mMediaDAO.setSpotifyPlayer(player);
+                    //mPlayer.addConnectionStateCallback(LoginActivity.this);
+                    //mPlayer.addPlayerNotificationCallback(LoginActivity.this);
+                    //mPlayer.play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    Log.e(TAG, "Could not initialize player: " + throwable.getMessage());
+                }
+            });
+        } else {
+            Log.e(TAG,"MediaDAO is null, cannot create Spotify Player");
+        }
     }
 
     @Override
@@ -111,6 +136,17 @@ public class MainActivity extends RoboActionBarActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        Spotify.destroyPlayer(this);
+        super.onDestroy();
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+        Log.d(TAG,"onFragmentInteraction, uri: " + uri.toString());
     }
 
     /**

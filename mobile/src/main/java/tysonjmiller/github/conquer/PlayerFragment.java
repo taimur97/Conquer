@@ -75,6 +75,8 @@ public class PlayerFragment extends BaseFragment implements MediaController.Medi
     public void onStart() {
         super.onStart();
         mediaController.setMediaPlayer(this);
+        mediaController.setEnabled(true);
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -103,15 +105,15 @@ public class PlayerFragment extends BaseFragment implements MediaController.Medi
 
     @Override
     public void start() {
-        if (SpotifyUtils.isSpotifyPlayerValid(mPlayer)){
-            mPlayer.play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
+        if (mMediaDAO != null && SpotifyUtils.isSpotifyPlayerValid(mMediaDAO.getSpotifyPlayer())){
+            mMediaDAO.getSpotifyPlayer().play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
         }
     }
 
     @Override
     public void pause() {
-        if (SpotifyUtils.isSpotifyPlayerValid(mPlayer)){
-            mPlayer.pause();
+        if (mMediaDAO != null && SpotifyUtils.isSpotifyPlayerValid(mMediaDAO.getSpotifyPlayer())){
+            mMediaDAO.getSpotifyPlayer().pause();
         }
     }
 
