@@ -8,6 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.MediaController;
+import android.widget.RelativeLayout;
+
+import com.google.inject.Inject;
 
 import roboguice.inject.InjectView;
 
@@ -21,7 +24,9 @@ import roboguice.inject.InjectView;
  * create an instance of this fragment.
  */
 public class PlayerFragment extends BaseFragment implements MediaController.MediaPlayerControl {
-    @InjectView(R.id.mediaController) MediaController mediaController;
+    @Inject MediaDAO mMediaDAO;
+    @InjectView(R.id.mediaController)       MediaController mediaController;
+    @InjectView(R.id.player_container)      RelativeLayout playerContainer;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -74,7 +79,8 @@ public class PlayerFragment extends BaseFragment implements MediaController.Medi
     @Override
     public void onStart() {
         super.onStart();
-        mediaController.setMediaPlayer(this);
+        //mediaController.setMediaPlayer(this); TODO change to singleton
+        mediaController.setAnchorView(playerContainer);
         mediaController.setEnabled(true);
 
     }

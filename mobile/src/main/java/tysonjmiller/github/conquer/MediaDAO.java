@@ -1,5 +1,7 @@
 package tysonjmiller.github.conquer;
 
+import android.media.MediaPlayer;
+
 import com.google.inject.Singleton;
 import com.spotify.sdk.android.playback.Config;
 import com.spotify.sdk.android.playback.Player;
@@ -9,7 +11,8 @@ import com.spotify.sdk.android.playback.Player;
  */
 @Singleton
 public class MediaDAO {
-    private Player mPlayer;
+    private MediaPlayer mMediaPlayer;
+    private Player mSpotifyPlayer;
     private Config mPlayerConfig;
 
     public MediaDAO() {
@@ -17,11 +20,11 @@ public class MediaDAO {
     }
 
     public Player getSpotifyPlayer() {
-        return mPlayer;
+        return mSpotifyPlayer;
     }
 
     public void setSpotifyPlayer(Player mPlayer) {
-        this.mPlayer = mPlayer;
+        this.mSpotifyPlayer = mPlayer;
     }
 
     public Config getSpotifyPlayerConfig() {
@@ -30,5 +33,26 @@ public class MediaDAO {
 
     public void setSpotifyPlayerConfig(Config mPlayerConfig) {
         this.mPlayerConfig = mPlayerConfig;
+    }
+
+    public MediaPlayer getMediaPlayer() {
+        return mMediaPlayer;
+    }
+
+    public void setMediaPlayer(MediaPlayer mediaPlayer) {
+        this.mMediaPlayer = mediaPlayer;
+    }
+
+    // TODO: Implement these methods
+    public boolean start(){
+        return false;
+    }
+
+    public boolean pause() {
+        return false;
+    }
+
+    public boolean nextSong(){
+        return false;
     }
 }
