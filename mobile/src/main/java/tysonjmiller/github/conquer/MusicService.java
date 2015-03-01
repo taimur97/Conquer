@@ -15,7 +15,8 @@ import java.io.IOException;
 /**
  * Created by Tyson Miller on 2/28/2015.
  */
-public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener {
+public class MusicService extends Service implements MediaPlayer.OnPreparedListener,
+        MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener {
     public static final String TAG = MusicService.class.getSimpleName();
 
     @Inject MediaDAO mMediaDAO;
@@ -33,30 +34,42 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         Log.d(TAG, "onStartCommand");
 
         if (intent.getAction().equals(Constants.ACTION_PLAY)) {
-            String localUri = intent.getStringExtra(Constants.LOCAL_SONG_URI);
-            String remoteUrl = intent.getStringExtra(Constants.REMOTE_SONG_URI);
-            boolean mediaOnDevice = !StringUtils.isNullOrEmpty(localUri);
-            if (!mediaOnDevice && StringUtils.isNullOrEmpty(remoteUrl)) {
-                Log.e(TAG, "No valid media source found!");
-                return -1;
-            }
-            mMediaPlayer = new MediaPlayer(); // initialize it here
-            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mMediaPlayer.setOnPreparedListener(this);
-            mMediaPlayer.setOnErrorListener(this);
-            try {
-                if (mediaOnDevice){
-                    mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(localUri));
-                } else {
-                    mMediaPlayer.setDataSource(remoteUrl);
-                }
-            } catch (IOException e) {
-                Log.e(TAG, "IOException while setting media data source!");
-            }
-            mMediaPlayer.setOnCompletionListener();
-            mMediaPlayer.prepareAsync(); // prepare async to not block main thread
+            initAndStartMediaPlayer(intent);
+        } else if (intent.getAction().equals(Constants.ACTION_PAUSE)) {
+            mMediaDAO.getMediaPlayer().pause();
+        } else if (intent.getAction().equals(Constants.ACTION_STOP)) {
+            mMediaDAO.stopAndReleaseMediaPlayer();
+            stopSelf();
         }
-        return startId;
+
+
+
+        return START_STICKY;
+    }
+
+    private void initAndStartMediaPlayer(Intent intent){
+        String localUri = intent.getStringExtra(Constants.LOCAL_SONG_URI);
+        String remoteUrl = intent.getStringExtra(Constants.REMOTE_SONG_URI);
+        boolean mediaOnDevice = !StringUtils.isNullOrEmpty(localUri);
+        if (!mediaOnDevice && StringUtils.isNullOrEmpty(remoteUrl)) {
+            Log.e(TAG, "No valid media source found!");
+            return;
+        }
+        mMediaPlayer = new MediaPlayer(); // initialize it here
+        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mMediaPlayer.setOnPreparedListener(this);
+        mMediaPlayer.setOnErrorListener(this);
+        try {
+            if (mediaOnDevice){
+                mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(localUri));
+            } else {
+                mMediaPlayer.setDataSource(remoteUrl);
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "IOException while setting media data source!");
+        }
+        mMediaPlayer.setOnCompletionListener((MediaPlayer.OnCompletionListener) this);
+        mMediaPlayer.prepareAsync(); // prepare async to not block main thread
     }
 
     @Override
@@ -68,14 +81,19 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
+        if (mMediaPlayer.isPlaying()) {
+            mMediaPlayer.stop();
+        }
+        mMediaPlayer.release();
+        mMediaDAO.stopAndReleaseMediaPlayer();
     }
 
     /** Called when MediaPlayer is ready */
     public void onPrepared(MediaPlayer player) {
-        Log.d(TAG, "MediaPlayer prepared, starting!");
+        Log.d(TAG, "MediaPlayer prepared");
         mMediaDAO.setMediaPlayer(player);
         mMediaDAO.getMediaPlayer().start();
-        MediaUtils.showNotification(this, player.getTrackInfo().);
+        MediaUtils.showNotification(this, "test", "test");
     }
 
     @Override
@@ -83,10 +101,33 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         return false;
     }
 
-    private MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener() {
-        @Override
-        public void onCompletion(MediaPlayer mp) {
+    @Override
+    public void onAudioFocusChange(int focusChange) {
+        switch (focusChange) {
+            case AudioManager.AUDIOFOCUS_GAIN:
+                // resume playback
+                if (mMediaDAO.getMediaPlayer() == null) return;
+                else if (!mMediaDAO.getMediaPlayer().isPlaying()) mMediaDAO.getMediaPlayer().start();
+                mMediaDAO.getMediaPlayer().setVolume(1.0f, 1.0f);
+                break;
 
+            case AudioManager.AUDIOFOCUS_LOSS:
+                // Lost focus for an unbounded amount of time: stop playback and release media player
+                mMediaDAO.stopAndReleaseMediaPlayer();
+                break;
+
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                // Lost focus for a short time, but we have to stop
+                // playback. We don't release the media player because playback
+                // is likely to resume
+                if (mMediaDAO.getMediaPlayer().isPlaying()) mMediaDAO.getMediaPlayer().pause();
+                break;
+
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                // Lost focus for a short time, but it's ok to keep playing
+                // at an attenuated level
+                if (mMediaDAO.getMediaPlayer().isPlaying()) mMediaDAO.getMediaPlayer().setVolume(0.1f, 0.1f);
+                break;
         }
-    };
+    }
 }

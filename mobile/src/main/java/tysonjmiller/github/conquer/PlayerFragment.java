@@ -7,10 +7,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
 
 import com.google.inject.Inject;
+
+import java.util.List;
 
 import roboguice.inject.InjectView;
 
@@ -27,6 +30,8 @@ public class PlayerFragment extends BaseFragment implements MediaController.Medi
     @Inject MediaDAO mMediaDAO;
     @InjectView(R.id.mediaController)       MediaController mediaController;
     @InjectView(R.id.player_container)      RelativeLayout playerContainer;
+    @InjectView(R.id.song_list)             ListView songListView;
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -67,6 +72,7 @@ public class PlayerFragment extends BaseFragment implements MediaController.Medi
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        List<Song> songs = MediaUtils.retrieveLocalMusic(getActivity());
     }
 
     @Override
