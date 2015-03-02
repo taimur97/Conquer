@@ -10,13 +10,12 @@ public class Constants {
 
     public static final String SPOTIFY_TOKEN_SHARED_PREF_KEY = "spotify_token_shared_pref_key";
 
-    public static final String LOCAL_SONG_URI = "local_song_uri";
-    public static final String REMOTE_SONG_URI = "remote_song_uri";
-
     public static final String ACTION_PLAY = "action_play";
     public static final String ACTION_PAUSE = "action_pause";
     public static final String ACTION_STOP = "action_stop";
     public static final String ACTION_NEXT = "action_next";
     public static final String ACTION_PREV = "action_prev";
     public static final String ACTION_SEEK = "action_prev";
+
+    public static final String INTENT_SONG_EXTRA = "intent_song_extra";
 }

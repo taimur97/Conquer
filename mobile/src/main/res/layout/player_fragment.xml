@@ -5,20 +5,13 @@
     android:layout_height="match_parent"
     tools:context="tysonjmiller.github.conquer.PlayerFragment">
 
-    <VideoView
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:minHeight="100dp"
-        android:id="@+id/videoView"
-        android:layout_alignParentTop="true" />
-
-    <ListView
-        android:id="@+id/song_list"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/song_list_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="100dp"
         android:layout_above="@+id/mediaController"
-        android:layout_below="@id/videoView"/>
+        android:layout_alignParentTop="true" />
 
     <MediaController
         android:id="@+id/mediaController"

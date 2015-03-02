@@ -4,16 +4,17 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
 
 import com.google.inject.Inject;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import roboguice.inject.InjectView;
 
@@ -28,9 +29,14 @@ import roboguice.inject.InjectView;
  */
 public class PlayerFragment extends BaseFragment implements MediaController.MediaPlayerControl {
     @Inject MediaDAO mMediaDAO;
-    @InjectView(R.id.mediaController)       MediaController mediaController;
-    @InjectView(R.id.player_container)      RelativeLayout playerContainer;
-    @InjectView(R.id.song_list)             ListView songListView;
+    @InjectView(R.id.mediaController)           MediaController mMediaController;
+    @InjectView(R.id.player_container)          RelativeLayout mPlayerContainer;
+    @InjectView(R.id.song_list_recycler_view)   RecyclerView mSongsRecyclerView;
+
+    private LinearLayoutManager mLayoutManager;
+    private SongListAdapter mAdapter;
+
+    private ArrayList<Song> songs;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -72,7 +78,6 @@ public class PlayerFragment extends BaseFragment implements MediaController.Medi
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        List<Song> songs = MediaUtils.retrieveLocalMusic(getActivity());
     }
 
     @Override
@@ -85,9 +90,24 @@ public class PlayerFragment extends BaseFragment implements MediaController.Medi
     @Override
     public void onStart() {
         super.onStart();
-        //mediaController.setMediaPlayer(this); TODO change to singleton
-        mediaController.setAnchorView(playerContainer);
-        mediaController.setEnabled(true);
+
+       songs = MediaUtils.retrieveLocalMusic(getActivity());
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        mSongsRecyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mSongsRecyclerView.setLayoutManager(mLayoutManager);
+
+        // specify an adapter (see also next example)
+        mAdapter = new SongListAdapter(songs, getActivity());
+        mSongsRecyclerView.setAdapter(mAdapter);
+
+        //mMediaController.setMediaPlayer(this); //TODO change to singleton
+        //mMediaController.setAnchorView(mPlayerContainer);
+        //mMediaController.setEnabled(true);
 
     }
 
@@ -118,14 +138,14 @@ public class PlayerFragment extends BaseFragment implements MediaController.Medi
     @Override
     public void start() {
         if (mMediaDAO != null && SpotifyUtils.isSpotifyPlayerValid(mMediaDAO.getSpotifyPlayer())){
-            mMediaDAO.getSpotifyPlayer().play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
+           // mMediaDAO.getSpotifyPlayer().play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
         }
     }
 
     @Override
     public void pause() {
         if (mMediaDAO != null && SpotifyUtils.isSpotifyPlayerValid(mMediaDAO.getSpotifyPlayer())){
-            mMediaDAO.getSpotifyPlayer().pause();
+           // mMediaDAO.getSpotifyPlayer().pause();
         }
     }
 

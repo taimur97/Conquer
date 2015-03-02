@@ -12,15 +12,18 @@ import com.google.inject.Inject;
 
 import java.io.IOException;
 
+import roboguice.RoboGuice;
+
 /**
  * Created by Tyson Miller on 2/28/2015.
  */
-public class MusicService extends Service implements MediaPlayer.OnPreparedListener,
+public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener,
         MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener {
     public static final String TAG = MusicService.class.getSimpleName();
 
     @Inject MediaDAO mMediaDAO;
-    MediaPlayer mMediaPlayer = null;
+    private MediaPlayer mMediaPlayer = null;
+    private Song mSong;
 
     /**
      * Init and start the media player, using either local URI or URL for streaming. For local, make sure
@@ -32,6 +35,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
      */
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
+        RoboGuice.getInjector(this.getApplicationContext()).injectMembers(this);
 
         if (intent.getAction().equals(Constants.ACTION_PLAY)) {
             initAndStartMediaPlayer(intent);
@@ -42,14 +46,17 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             stopSelf();
         }
 
-
-
         return START_STICKY;
     }
 
     private void initAndStartMediaPlayer(Intent intent){
-        String localUri = intent.getStringExtra(Constants.LOCAL_SONG_URI);
-        String remoteUrl = intent.getStringExtra(Constants.REMOTE_SONG_URI);
+        mSong = (Song)intent.getSerializableExtra(Constants.INTENT_SONG_EXTRA);
+        if (mSong == null) {
+            Log.e(TAG, "No Song data was sent to the MusicService!");
+            return;
+        }
+        String localUri = mSong.localUri;//intent.getStringExtra(Constants.LOCAL_SONG_URI);
+        String remoteUrl = mSong.remoteUrl;//intent.getStringExtra(Constants.REMOTE_SONG_URI);
         boolean mediaOnDevice = !StringUtils.isNullOrEmpty(localUri);
         if (!mediaOnDevice && StringUtils.isNullOrEmpty(remoteUrl)) {
             Log.e(TAG, "No valid media source found!");
@@ -68,7 +75,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         } catch (IOException e) {
             Log.e(TAG, "IOException while setting media data source!");
         }
-        mMediaPlayer.setOnCompletionListener((MediaPlayer.OnCompletionListener) this);
+        mMediaPlayer.setOnCompletionListener(this);
         mMediaPlayer.prepareAsync(); // prepare async to not block main thread
     }
 
@@ -90,10 +97,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     /** Called when MediaPlayer is ready */
     public void onPrepared(MediaPlayer player) {
-        Log.d(TAG, "MediaPlayer prepared");
-        mMediaDAO.setMediaPlayer(player);
-        mMediaDAO.getMediaPlayer().start();
-        MediaUtils.showNotification(this, "test", "test");
+        Log.d(TAG, "onPrepared");
+        //mMediaDAO.setMediaPlayer(player);
+        //mMediaDAO.getMediaPlayer().start();
+        //MediaUtils.showNotification(this, mSong);
     }
 
     @Override
@@ -129,5 +136,13 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 if (mMediaDAO.getMediaPlayer().isPlaying()) mMediaDAO.getMediaPlayer().setVolume(0.1f, 0.1f);
                 break;
         }
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer player) {
+        Log.d(TAG, "onCompletion, playing");
+        mMediaDAO.setMediaPlayer(player);
+        mMediaDAO.getMediaPlayer().start();
+        MediaUtils.showNotification(this, mSong);
     }
 }

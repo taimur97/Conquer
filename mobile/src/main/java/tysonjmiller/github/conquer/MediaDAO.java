@@ -1,5 +1,7 @@
 package tysonjmiller.github.conquer;
 
+import android.content.Context;
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.util.Log;
 
@@ -89,5 +91,12 @@ public class MediaDAO {
             mSongList = new ArrayList<Song>();
         }
         mSongList.addAll(songs);
+    }
+
+    public void sendActionToMediaService(Context context, Song song, String action){
+        Intent intent = new Intent(context, MusicService.class);
+        intent.setAction(action);
+        intent.putExtra(Constants.INTENT_SONG_EXTRA, song);
+        context.startService(intent);
     }
 }

@@ -1,9 +1,11 @@
 package tysonjmiller.github.conquer;
 
+import java.io.Serializable;
+
 /**
  * Created by Tyson Miller on 3/1/2015.
  */
-public class Song {
+public class Song implements Serializable {
     public String title;
     public String artist;
     public boolean isLocal;

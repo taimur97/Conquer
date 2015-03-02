@@ -20,19 +20,20 @@ public class MediaUtils {
     public final static String TAG = MediaUtils.class.getSimpleName();
     public final static int NOTIFICATION_ID = 12345;
 
-    public static void showNotification(Service source, String songName, String artistName) {
-        if (source == null) {
+    public static void showNotification(Service source, Song song) {
+        if (source == null || song == null) {
             return;
         }
+        Log.d(TAG, "Showing notification for: " + song.title + " by " + song.artist);
         PendingIntent pi = PendingIntent.getActivity(source.getApplicationContext(), 0,
                 new Intent(source.getApplicationContext(), source.getClass()),
                 PendingIntent.FLAG_UPDATE_CURRENT);
         Notification notification = new Notification();
-        notification.tickerText = songName + " " + artistName;
-        notification.icon = android.R.drawable.ic_media_play;
+        notification.tickerText = song.title + " " + song.artist;
+        notification.icon = android.R.drawable.ic_media_play; // TODO use Constants.ACTION_XXX to determine
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
         notification.setLatestEventInfo(source.getApplicationContext(), "MusicPlayerSample",
-                "Playing: " + songName, pi);
+                "Playing: " + song.title + " by " + song.artist, pi);
         source.startForeground(NOTIFICATION_ID, notification);
     }
 
