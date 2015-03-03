@@ -53,7 +53,6 @@ public class LoginActivity extends RoboActivity implements
                 startActivity(intent);
             }
         });
-
     }
 
     @Override
